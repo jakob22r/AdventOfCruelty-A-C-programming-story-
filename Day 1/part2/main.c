@@ -5,6 +5,7 @@ int main() {
 
     int max_cal1 = 0;
     int max_cal2 = 0;
+    int max_cal3 = 0;
     
     int current_cal = 0;
 
@@ -21,6 +22,8 @@ int main() {
                 max_cal1 = current_cal;
             } else if (current_cal > max_cal2) {
                 max_cal2 = current_cal;
+            } else if (current_cal > max_cal3) {
+                max_cal3 = current_cal;
             }
             current_cal = 0;
         }
@@ -29,7 +32,11 @@ int main() {
         printf("Current cal after: %i\n", current_cal);
         printf("Max_cal: %i\n", max_cal1);
     }
+
+    int total = max_cal1 + max_cal2 + max_cal3;
+    printf("Total: %i\n", total);
+
     fclose(fp);
-    return max_cal1;
+    return 0;
 }
 
