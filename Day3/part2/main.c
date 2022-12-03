@@ -1,100 +1,82 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
-#define MAX_LINE_LENGHT 5;
+#define MAX_LINE_LENGHT 200;
 
-int total_score;
+int priorities_total_sum = 0;
 
-//Points awarded for choosing sign
-int item_points(int player) {
-    if (player == 0) {
-        return 1;
-    } else if (player == 1) {
-        return 2;
+int item_priority(char item) {
+    int ascii = (int)item;
+    int priority;
+    if (ascii >= 65 && ascii <= 90) {
+        priority = ascii - 65 + 27;
     } else {
-        return 3;
+        priority = ascii - 96;
     }
+    
+    return priority;
 }
 
-//Internal representation for use in algorithm, Basically converts char to a number
-int internal_rep (char player) {
-    if (player == 'X' || player == 'A') {
-        return 0;
-    } else if (player == 'Y' || player == 'B') {
-        return 1;
-    } else {
-        return 2;
+char common_item(char* str1, char* str2, char* str3, int len1, int len2, int len3) {
+    for (int i = 0; i < len1; i++){
+        for (int j = 0; j < len2; j++) {
+            for (int k = 0; k < len3; k++){
+                if ((str1[i] == str2[j]) && (str1[i] == str3[k])) {
+                    return str1[i];
+                }
+            }
+            
+        }
     }
-}
-
-//Using internal representation to calculate who has won 
-int round_points(int opp, int me) {
-    if ((opp + 1) % 3 == me) {
-        //I won
-        return 6;
-    } else if (opp == me) {
-        //Draw
-        return 3;
-    } else { 
-        //Opponent won
-        return 0;
-    }
-}
-
-//Choses correct strategy, and returns proper symbol
-int choose_sign(int opp_int, int me_int) {
-    if (me_int == 1) { //If Y (paper = 1) we want a draw
-        return opp_int;
-    } else if (me_int == 2) { //Z, so we want to win
-        return (opp_int + 1) % 3;
-    } else {
-         if (opp_int == 0) {
-            return 2; //Easy way avoiding having to think about more modular arithmetic
-         } else {
-            return opp_int - 1;
-         }
-    }
+    printf("\nExited code 1, no common item!\n");
+    exit(1);
 }
 
 int main() {
-    int unusedvrb1 = 0; //My C crashes if they are not here, segfault...
-    int unusedvrb2 = 0;
 
     FILE *fp;
     fp = (fopen("input.txt", "r"));
 
+    int group_count = 0;
+    
     char* buffer;
     size_t bufsize = MAX_LINE_LENGHT;
-    
+    buffer = (char *)malloc(bufsize * sizeof(char));
+
+    char buf1[200];
+    char buf2[200];
+    char buf3[200];
+
     while (getline(&buffer,&bufsize,fp) != -1) {
-        char opp = buffer[0];
-        char me = buffer[2];
-        printf("---ROUND---\n");
-        printf("opp: %c, me %c\n", opp, me);
-
-        int internal_rep_opp = internal_rep(opp);
-        int internal_rep_me = internal_rep(me);
-
-        //I have to figure out what to do according to strategy
-        int new_sign_me = choose_sign(internal_rep_opp, internal_rep_me);
-       
-        printf("Internal_rep_opp: %i\n", internal_rep_opp);
-        printf("new_sign_me: %i\n", new_sign_me);
-
-        int item_point = item_points(new_sign_me);
-        int round_score = round_points(internal_rep_opp, new_sign_me);
-
-        printf("Item Point: %i\n", item_point);
-        printf("Round score: %i\n", round_score);
-
-        int round_total;
-        round_total = item_point + round_score;
-        printf("Round total: %i\n", round_total);
-        
-        total_score = total_score + round_total;
-
-        printf("Total score: %i\n\n", total_score);
+        int cpy_len = (strlen(buffer) - 1);
+        group_count++;
+        switch(group_count) {
+            case 1:
+                memcpy(buf1, buffer, cpy_len);
+                buf1[cpy_len] = '\0';
+                break;
+            case 2:
+                memcpy(buf2, buffer, cpy_len);
+                buf2[cpy_len] = '\0';
+                break;
+            case 3: 
+                memcpy(buf3, buffer, cpy_len);
+                buf3[cpy_len] = '\0';
+                break;
+        }
+        if (group_count == 3) {
+            char common = common_item(buf1, buf2, buf3, strlen(buf1), strlen(buf2), strlen(buf3));
+            int priority = item_priority(common);
+            priorities_total_sum = priorities_total_sum + priority;
+            group_count = 0;
+        }         
     }
+
     fclose(fp);
-    return 0;
+
+    printf("Result: %i\n", priorities_total_sum);
+
+    free(buffer);
+    exit(0);
 }
