@@ -10,3 +10,6 @@ Day 1/part1-cs/obj/Debug/net6.0/part1-cs.AssemblyInfoInputs.cache
 Day3/part1/Makefile
 Day3/part2/main
 Day3/part1/main
+*.editorconfig
+*.cs
+*.cache
