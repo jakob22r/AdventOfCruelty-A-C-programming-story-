@@ -1,26 +1,28 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include<unistd.h>
 
 #define MAX_LINE_LENGHT 200;
+
+int num_stacks = 9;
 
 //Taken from stackoverflow
 char *strrev(char *str)
 {
-    char *end, *wrk = str;
-    {
-        if(str && *str)
-        {
-            end = str + strlen(str) - 1;
-            while(end > wrk)
-            {
-                char temp;
+    if (!str || ! *str)
+        return str;
 
-                temp = *wrk;
-                *wrk++ = *end;
-                *end-- = temp;
-            }
-        }
+    int i = strlen(str) - 1, j = 0;
+
+    char ch;
+    while (i > j)
+    {
+        ch = str[i];
+        str[i] = str[j];
+        str[j] = ch;
+        i--;
+        j++;
     }
     return str;
 }
@@ -43,52 +45,58 @@ struct stack* stack_init() {
 }
 
 void init_stacks() {
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < num_stacks; i++) {
         struct stack* stack = stack_init();
         controlarr[i] = stack; //Adding stackpointer to control array
     }
 }
 
 void destroy_stacks() {
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < num_stacks; i++) {
         free(controlarr[i]);
     }
 }
 
 void print_stack(int stack_index) {
+    printf("---PRINTING STACK %i---\n", stack_index);
+    printf("Top-index: %i\n", controlarr[stack_index]->top);
+    printf("Top-elem: %c\n", controlarr[stack_index]->stack[controlarr[stack_index]->top]); 
     for (int i = 0; i <= controlarr[stack_index]->top; i++) {
         printf("%c", controlarr[stack_index]->stack[i]);
-    }
-    printf("\nTop-index: %i\n", controlarr[stack_index]->top);
-    printf("Top-elem: %c\n", controlarr[stack_index]->stack[controlarr[stack_index]->top]);    
+    }   
+    printf("\n---------------\n");
 }
 
 void print_all_stacks() {
-    for (size_t i = 0; i < 3; i++)
+    for (int i = 0; i < num_stacks; i++)
     {
         print_stack(i);
     }
     
 }
 
-//push onto proper stack
 void push(char elem, int stack_index) {
     controlarr[stack_index]->top++;
     controlarr[stack_index]->stack[controlarr[stack_index]->top] = elem; //Insert elem on top
+    controlarr[stack_index]->stack[controlarr[stack_index]->top+1] = '\0';
 }
 
 char pop(int stack_index) {
-    char popped = controlarr[stack_index]->stack[controlarr[stack_index]->top];
-    controlarr[stack_index]->top--;
-    return popped;
+    if (controlarr[stack_index]->top >= 0) {
+        char popped = controlarr[stack_index]->stack[controlarr[stack_index]->top];
+        controlarr[stack_index]->top--;
+        return popped;
+    } else {
+        printf("CANNOT POP FROM EMPTY STACK!\n");
+    }
+    
 }
 
-
 void reverse_all_stacks() {
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < num_stacks; i++) {
         //Reverse stack items
         char* rev = strrev(controlarr[i]->stack);
-        memcpy(controlarr[i]->stack, rev, sizeof(controlarr[i]->stack));
+        memcpy(&controlarr[i]->stack, rev, sizeof(controlarr[i]->stack));
 
         //Set top index properly
         controlarr[i]->top = strlen(controlarr[i]->stack)-1;
@@ -96,13 +104,11 @@ void reverse_all_stacks() {
 }
 
 void move(int amount, int from, int to) {
-    
     for (int i = 0; i < amount; i++)
     {
         char popped = pop(from-1); //+1 to correct 1-indexing in assignment
         push(popped, to-1);
     }
-    
 }
 
 int main() {
@@ -113,7 +119,7 @@ int main() {
     size_t bufsize0 = MAX_LINE_LENGHT;
     buffer0 = (char *)malloc(bufsize0 * sizeof(char));
     FILE *fp0;
-    fp0 = (fopen("setup2.txt", "r"));
+    fp0 = (fopen("setup.txt", "r"));
     while (getline(&buffer0,&bufsize0,fp0) != -1) {
         for (size_t i = 0; i < strlen(buffer0); i++)
         {
@@ -124,6 +130,7 @@ int main() {
         }
     }
     reverse_all_stacks();
+    print_all_stacks();
     
     fclose(fp0);   
     free(buffer0); 
@@ -131,7 +138,7 @@ int main() {
 
 
     FILE *fp;
-    fp = (fopen("input2.txt", "r"));
+    fp = (fopen("input.txt", "r"));
     
     char* buffer;
     size_t bufsize = MAX_LINE_LENGHT;
@@ -146,7 +153,7 @@ int main() {
     }
 
     printf("Result:\n");
-    for (size_t i = 0; i < 9; i++)
+    for (size_t i = 0; i < num_stacks; i++)
     {
         printf("%c",controlarr[i]->stack[controlarr[i]->top]);
     }
